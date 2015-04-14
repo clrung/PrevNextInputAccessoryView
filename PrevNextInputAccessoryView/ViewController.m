@@ -26,7 +26,7 @@
     
     // monitor which field is currently selected, and set each of the input accessory views.
     for(UITextField *field in _textFields) {
-        [field addTarget:self action:@selector(fieldSelected:) forControlEvents:UIControlEventEditingDidBegin];
+        [field addTarget:self action:@selector(setActiveTextField:) forControlEvents:UIControlEventEditingDidBegin];
         [field setInputAccessoryView:[_inputAccessoryViews objectAtIndex:field.tag]];
     }
 }
@@ -43,14 +43,14 @@
     _inputAccessoryViews = [[NSArray alloc] initWithObjects:[[UIToolbar alloc] init], [[UIToolbar alloc] init], [[UIToolbar alloc] init], [[UIToolbar alloc] init], nil];
     
     for(UIToolbar *accessoryView in _inputAccessoryViews) {
-        UIBarButtonItem *prevButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:101 target:nil action:@selector(goToPrevField)]; // 101 is the < character
-        UIBarButtonItem *nextButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:102 target:nil action:@selector(goToNextField)]; // 102 is the > character
-        UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithTitle:@"Done" style:UIBarButtonItemStylePlain target:nil action:@selector(dismissKeyboard)];
-        UIBarButtonItem *flexSpace  = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
-        UIBarButtonItem *fake       = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
+        UIBarButtonItem *prevButton  = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:101 target:nil action:@selector(goToPrevField)]; // 101 is the < character
+        UIBarButtonItem *nextButton  = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:102 target:nil action:@selector(goToNextField)]; // 102 is the > character
+        UIBarButtonItem *doneButton  = [[UIBarButtonItem alloc] initWithTitle:@"Done" style:UIBarButtonItemStylePlain target:nil action:@selector(dismissKeyboard)];
+        UIBarButtonItem *flexSpace   = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+        UIBarButtonItem *placeholder = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
         
         [accessoryView sizeToFit];
-        [accessoryView setItems:[NSArray arrayWithObjects: prevButton, fake, nextButton, fake, flexSpace, fake, doneButton, nil] animated:YES];
+        [accessoryView setItems:[NSArray arrayWithObjects: prevButton, placeholder, nextButton, placeholder, flexSpace, placeholder, doneButton, nil] animated:YES];
     }
     
     // disable the previous button in the first accessory view
@@ -59,8 +59,8 @@
     ((UIBarButtonItem*)[((UIToolbar*)[_inputAccessoryViews objectAtIndex:3]).items objectAtIndex:2]).enabled = NO;
 }
 
-- (void)fieldSelected:(UITextField*)selectedField {
-    _activeTextField = selectedField;
+- (void)setActiveTextField:(UITextField *)activeTextField {
+    _activeTextField = activeTextField;
 }
 
 //
@@ -88,12 +88,12 @@
 // Controls behavior of touching the Next or Done button in the keyboard.
 //
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
-    // if currently focused on first three textboxes, go to the next text box
+    // if currently focused on first three text fields, go to the next text field
     if (textField.tag < 3) {
         [[_textFields objectAtIndex:(textField.tag + 1)] becomeFirstResponder];
-        // if currently focused on last textbox, dismiss the keyboard.
+        // if currently focused on last text field, dismiss the keyboard.
     } else if (textField.tag == 3) {
-        [[_textFields objectAtIndex:3] resignFirstResponder];
+        [[_textFields objectAtIndex:textField.tag] resignFirstResponder];
     }
     
     return YES;
